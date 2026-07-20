@@ -154,6 +154,9 @@ Rules:
         'content-type': 'application/json',
         'x-api-key': API_KEY,
         'anthropic-version': '2023-06-01',
+        // React Native's fetch doesn't enforce CORS, but Expo's web target runs in a
+        // real browser, which blocks this call without the header below.
+        'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
         model: MODEL,
