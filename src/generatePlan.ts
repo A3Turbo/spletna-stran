@@ -18,6 +18,22 @@ export type PlanDay = {
   meals: Meal[];
 };
 
+export type ShoppingItem = {
+  name: string;
+  amount: string;
+  price: number;
+};
+
+export type ShoppingCategory = {
+  cat: string;
+  items: ShoppingItem[];
+};
+
+export type GeneratedPlan = {
+  days: PlanDay[];
+  shoppingList: ShoppingCategory[];
+};
+
 export type FamilyMember = {
   name: string;
   role: string;
@@ -62,8 +78,31 @@ const PLAN_SCHEMA = {
         required: ['day', 'date', 'meals'],
       },
     },
+    shoppingList: {
+      type: 'array',
+      description: 'Consolidated grocery list for the whole week, grouped by category, with duplicate ingredients across meals merged into one line.',
+      items: {
+        type: 'object',
+        properties: {
+          cat: { type: 'string', description: 'e.g. Meat & fish, Vegetables, Dairy, Grains & basics, Pantry & spices' },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                amount: { type: 'string', description: 'total amount needed for the week, e.g. "600 g" or "3 pcs"' },
+                price: { type: 'number', description: 'estimated total price for that amount, local currency' },
+              },
+              required: ['name', 'amount', 'price'],
+            },
+          },
+        },
+        required: ['cat', 'items'],
+      },
+    },
   },
-  required: ['days'],
+  required: ['days', 'shoppingList'],
 };
 
 export async function generateWeekPlan(params: {
@@ -71,7 +110,7 @@ export async function generateWeekPlan(params: {
   ratings: Record<string, number>;
   region: string;
   weekDays: { day: string; date: string }[];
-}): Promise<PlanDay[]> {
+}): Promise<GeneratedPlan> {
   if (!API_KEY) {
     throw new GenerationError('Missing Anthropic API key. Add EXPO_PUBLIC_ANTHROPIC_API_KEY to .env');
   }
@@ -104,7 +143,8 @@ Rules:
 - Avoid ingredients any family member dislikes.
 - Vary meals across the week — do not repeat the same dish.
 - Keep breakfasts quick (under 20 min) unless it's a weekend.
-- Call the submit_week_plan tool with the full 7-day plan.`;
+- After planning all meals, build a consolidated shoppingList: merge the same ingredient used in multiple meals into a single line with the total amount and total estimated price, grouped into sensible categories.
+- Call the submit_week_plan tool with the full 7-day plan and the shoppingList.`;
 
   let res: Response;
   try {
@@ -142,5 +182,5 @@ Rules:
     throw new GenerationError('Claude did not return a structured plan.');
   }
 
-  return toolUse.input.days as PlanDay[];
+  return toolUse.input as GeneratedPlan;
 }

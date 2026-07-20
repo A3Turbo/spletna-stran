@@ -44,10 +44,10 @@ export default function GeneratingScreen() {
         const family: FamilyMember[] = raw ? JSON.parse(raw) : [];
         const weekDays = getWeekDays(getWeekStart());
 
-        const days = await generateWeekPlan({ family, ratings, region, weekDays });
+        const generated = await generateWeekPlan({ family, ratings, region, weekDays });
         if (cancelled) return;
 
-        await savePlan(days);
+        await savePlan(generated);
         clearInterval(stepTimer);
         setStep(STEPS.length - 1);
         setTimeout(() => { if (!cancelled) router.replace('/week'); }, 500);

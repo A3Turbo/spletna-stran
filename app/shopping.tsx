@@ -4,30 +4,21 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../src/theme';
 import { Eyebrow, Rule } from '../src/components';
-import { SHOPPING } from '../src/data';
+import { useWeekPlan } from '../src/useWeekPlan';
 
 type CheckedMap = Record<string, boolean>;
 
-function buildInitialChecked(): CheckedMap {
-  const map: CheckedMap = {};
-  SHOPPING.forEach(cat => {
-    cat.items.forEach(item => {
-      map[`${cat.cat}:${item.name}`] = item.checked;
-    });
-  });
-  return map;
-}
-
 export default function ShoppingScreen() {
   const router = useRouter();
-  const [checked, setChecked] = useState<CheckedMap>(buildInitialChecked);
+  const { shoppingList } = useWeekPlan();
+  const [checked, setChecked] = useState<CheckedMap>({});
 
   function toggle(cat: string, name: string) {
     const key = `${cat}:${name}`;
     setChecked(prev => ({ ...prev, [key]: !prev[key] }));
   }
 
-  const total = SHOPPING.reduce((sum, cat) =>
+  const total = shoppingList.reduce((sum, cat) =>
     sum + cat.items.reduce((s, item) =>
       checked[`${cat.cat}:${item.name}`] ? s : s + item.price, 0), 0);
 
@@ -44,7 +35,12 @@ export default function ShoppingScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        {SHOPPING.map((cat, ci) => {
+        {shoppingList.length === 0 && (
+          <View style={styles.emptyBox}>
+            <Text style={styles.emptyText}>No shopping list yet.{'\n'}Generate a meal plan first.</Text>
+          </View>
+        )}
+        {shoppingList.map((cat, ci) => {
           const catTotal = cat.items.reduce((s, item) =>
             checked[`${cat.cat}:${item.name}`] ? s : s + item.price, 0);
           return (
@@ -103,6 +99,8 @@ const styles = StyleSheet.create({
   totalBadge:   { backgroundColor: colors.tomato, paddingHorizontal: 10, paddingVertical: 4 },
   totalBadgeText: { fontFamily: 'JetBrains Mono', fontSize: 12, letterSpacing: 0.5, color: '#fff' },
   content:      { paddingHorizontal: 22, paddingTop: 4 },
+  emptyBox:     { borderWidth: 1, borderColor: colors.rule, borderStyle: 'dashed', padding: 32, alignItems: 'center', marginTop: 20 },
+  emptyText:    { fontFamily: 'DM Serif Display', fontStyle: 'italic', fontSize: 16, color: colors.inkSoft, textAlign: 'center', lineHeight: 24 },
   catHeader:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   catTotal:     { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 0.5, color: colors.inkSoft },
   catCard:      { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.rule, marginBottom: 8 },

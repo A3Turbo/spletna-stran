@@ -24,7 +24,7 @@ export default function WeekScreen() {
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [modalDay, setModalDay] = useState(0);
   const [modalGuests, setModalGuests] = useState(2);
-  const { plan } = useWeekPlan();
+  const { days: plan } = useWeekPlan();
   const cur = plan[day] ?? plan[0];
   const totalMeals = plan.length * 3;
   const memberCount = useFamilyCount();
