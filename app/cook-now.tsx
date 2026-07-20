@@ -3,25 +3,27 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../src/theme';
 import { Eyebrow, Rule, FoodImage } from '../src/components';
-import { PANTRY, SAMPLE_WEEK } from '../src/data';
+import { usePantry } from '../src/usePantry';
+import { useWeekPlan } from '../src/useWeekPlan';
 
-const pantryNames = PANTRY.filter(p => p.have).map(p => p.name.toLowerCase());
-
-function matchScore(ingredients: string[]): number {
+function matchScore(ingredients: string[], pantryNames: string[]): number {
   return ingredients.filter(ing => pantryNames.some(p => p.includes(ing.toLowerCase()) || ing.toLowerCase().includes(p))).length;
 }
 
-const allMeals = SAMPLE_WEEK.flatMap(day => day.meals);
-
-const suggestions = allMeals
-  .map(m => ({ ...m, score: matchScore(m.mainIngredients), total: m.mainIngredients.length }))
-  .filter(m => m.score >= 2)
-  .sort((a, b) => b.score / b.total - a.score / a.total)
-  .slice(0, 6);
-
 export default function CookNowScreen() {
   const router = useRouter();
-  const haveItems = PANTRY.filter(p => p.have);
+  const { items } = usePantry();
+  const { days } = useWeekPlan();
+
+  const haveItems = items.filter(p => p.have);
+  const pantryNames = haveItems.map(p => p.name.toLowerCase());
+  const allMeals = days.flatMap(day => day.meals);
+
+  const suggestions = allMeals
+    .map(m => ({ ...m, score: matchScore(m.mainIngredients, pantryNames), total: m.mainIngredients.length }))
+    .filter(m => m.score >= 2)
+    .sort((a, b) => b.score / b.total - a.score / a.total)
+    .slice(0, 6);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.paper }}>
