@@ -8,6 +8,7 @@ import { Eyebrow } from '../src/components';
 import { useRatings } from '../src/useRatings';
 import { useRegion } from '../src/useRegion';
 import { useWeekPlan } from '../src/useWeekPlan';
+import { useFavorites } from '../src/useFavorites';
 import { generateWeekPlan, FamilyMember } from '../src/generatePlan';
 import { getWeekStart, getWeekDays } from '../src/utils';
 
@@ -27,10 +28,11 @@ export default function GeneratingScreen() {
   const { ratings, loaded: ratingsLoaded } = useRatings();
   const { region, loaded: regionLoaded } = useRegion();
   const { savePlan } = useWeekPlan();
+  const { favorites, loaded: favoritesLoaded } = useFavorites();
   const started = useRef(false);
 
   useEffect(() => {
-    if (!ratingsLoaded || !regionLoaded || started.current) return;
+    if (!ratingsLoaded || !regionLoaded || !favoritesLoaded || started.current) return;
     started.current = true;
 
     let cancelled = false;
@@ -44,7 +46,7 @@ export default function GeneratingScreen() {
         const family: FamilyMember[] = raw ? JSON.parse(raw) : [];
         const weekDays = getWeekDays(getWeekStart());
 
-        const generated = await generateWeekPlan({ family, ratings, region, weekDays });
+        const generated = await generateWeekPlan({ family, ratings, region, weekDays, favorites });
         if (cancelled) return;
 
         await savePlan(generated);
@@ -60,7 +62,7 @@ export default function GeneratingScreen() {
     run();
 
     return () => { cancelled = true; clearInterval(stepTimer); };
-  }, [ratingsLoaded, regionLoaded]);
+  }, [ratingsLoaded, regionLoaded, favoritesLoaded]);
 
   const progress = ((step + 1) / STEPS.length) * 100;
 

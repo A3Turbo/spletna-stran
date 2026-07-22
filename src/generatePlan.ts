@@ -110,15 +110,22 @@ export async function generateWeekPlan(params: {
   ratings: Record<string, number>;
   region: string;
   weekDays: { day: string; date: string }[];
+  favorites?: Meal[];
 }): Promise<GeneratedPlan> {
   if (!API_KEY) {
     throw new GenerationError('Missing Anthropic API key. Add EXPO_PUBLIC_ANTHROPIC_API_KEY to .env');
   }
 
-  const { family, ratings, region, weekDays } = params;
+  const { family, ratings, region, weekDays, favorites = [] } = params;
 
   const liked = Object.entries(ratings).filter(([, s]) => s >= 4).map(([n]) => n);
   const disliked = Object.entries(ratings).filter(([, s]) => s <= 2).map(([n]) => n);
+
+  // Reuse a couple of saved favorites verbatim so they actually come back, not just "similar" dishes.
+  const reusedFavorites = favorites
+    .filter(f => !disliked.includes(f.name))
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 2);
 
   const familyLines = family.length
     ? family.map(m =>
@@ -133,6 +140,7 @@ ${familyLines}
 
 ${liked.length ? `Dishes this family previously rated highly (favor similar dishes/ingredients): ${liked.join(', ')}` : ''}
 ${disliked.length ? `Dishes this family previously rated poorly (avoid these and similar dishes): ${disliked.join(', ')}` : ''}
+${reusedFavorites.length ? `The family saved these exact meals as favorites — include them verbatim (same name, kcal, price, tag, mainIngredients) in whichever day/meal-type slot fits best, do not invent a variation: ${JSON.stringify(reusedFavorites)}` : ''}
 
 Region: ${region}. Use realistic grocery prices for that region's currency.
 

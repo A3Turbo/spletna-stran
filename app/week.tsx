@@ -113,7 +113,10 @@ export default function WeekScreen() {
             return (
               <TouchableOpacity key={i} style={styles.mealCard} onPress={() => router.push({
                 pathname: '/recipe',
-                params: { name: m.name, time: m.time, kcal: String(m.kcal), price: String(m.price), type: m.type },
+                params: {
+                  name: m.name, time: m.time, kcal: String(m.kcal), price: String(m.price), type: m.type,
+                  tag: m.tag, mainIngredients: JSON.stringify(m.mainIngredients),
+                },
               })}>
                 <FoodImage dishName={m.name} height={140} caption={`${m.type.toUpperCase()} · ${m.name.slice(0, 22)}`} />
                 <View style={styles.mealInfo}>

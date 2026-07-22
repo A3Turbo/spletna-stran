@@ -5,10 +5,12 @@ import { colors } from '../src/theme';
 import { Eyebrow, Rule, FoodImage } from '../src/components';
 import { RECIPE_DETAIL } from '../src/data';
 import { useRatings } from '../src/useRatings';
+import { useFavorites } from '../src/useFavorites';
+import { Meal } from '../src/generatePlan';
 
 export default function RecipeScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ name?: string; time?: string; kcal?: string; price?: string; type?: string }>();
+  const params = useLocalSearchParams<{ name?: string; time?: string; kcal?: string; price?: string; type?: string; tag?: string; mainIngredients?: string }>();
 
   const mealName = params.name ?? RECIPE_DETAIL.name;
   const mealTime = params.time ?? RECIPE_DETAIL.time;
@@ -18,7 +20,22 @@ export default function RecipeScreen() {
   const r = RECIPE_DETAIL;
   const [portion, setPortion] = useState(r.servings);
   const { ratings, rate } = useRatings();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const currentRating = ratings[mealName] ?? 0;
+  const favorite = isFavorite(mealName);
+
+  function onToggleFavorite() {
+    const meal: Meal = {
+      type: (params.type as Meal['type']) ?? 'dinner',
+      name: mealName,
+      time: mealTime,
+      kcal: mealKcal,
+      price: mealPrice,
+      tag: params.tag ?? '',
+      mainIngredients: params.mainIngredients ? JSON.parse(params.mainIngredients) : [],
+    };
+    toggleFavorite(meal);
+  }
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} showsVerticalScrollIndicator={false}>
@@ -28,8 +45,8 @@ export default function RecipeScreen() {
         <TouchableOpacity style={styles.backCircle} onPress={() => router.back()}>
           <Text style={styles.backCircleText}>←</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.heartCircle}>
-          <Text style={styles.heartCircleText}>♡</Text>
+        <TouchableOpacity style={styles.heartCircle} onPress={onToggleFavorite}>
+          <Text style={styles.heartCircleText}>{favorite ? '♥' : '♡'}</Text>
         </TouchableOpacity>
       </View>
 
