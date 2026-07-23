@@ -10,6 +10,7 @@ import { useRegion } from '../src/useRegion';
 import { useWeekPlan } from '../src/useWeekPlan';
 import { useFavorites } from '../src/useFavorites';
 import { generateWeekPlan, FamilyMember } from '../src/generatePlan';
+import { getDishPhotoUrls } from '../src/dishPhoto';
 import { getWeekStart, getWeekDays } from '../src/utils';
 
 const FAMILY_KEY = '@jedilnik_family';
@@ -19,6 +20,7 @@ const STEPS = [
   'Finding recipes for all members...',
   'Composing the weekly rhythm...',
   'Preparing the shopping list...',
+  'Finding photos for each dish...',
 ];
 
 export default function GeneratingScreen() {
@@ -48,6 +50,15 @@ export default function GeneratingScreen() {
 
         const generated = await generateWeekPlan({ family, ratings, region, weekDays, favorites });
         if (cancelled) return;
+
+        const allNames = generated.days.flatMap(d => d.meals.map(m => m.name));
+        const photos = await getDishPhotoUrls(allNames);
+        if (cancelled) return;
+        for (const day of generated.days) {
+          for (const meal of day.meals) {
+            if (photos[meal.name]) meal.photoUrl = photos[meal.name];
+          }
+        }
 
         await savePlan(generated);
         clearInterval(stepTimer);

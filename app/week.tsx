@@ -115,10 +115,10 @@ export default function WeekScreen() {
                 pathname: '/recipe',
                 params: {
                   name: m.name, time: m.time, kcal: String(m.kcal), price: String(m.price), type: m.type,
-                  tag: m.tag, mainIngredients: JSON.stringify(m.mainIngredients),
+                  tag: m.tag, mainIngredients: JSON.stringify(m.mainIngredients), photoUrl: m.photoUrl ?? '',
                 },
               })}>
-                <FoodImage dishName={m.name} height={140} caption={`${m.type.toUpperCase()} · ${m.name.slice(0, 22)}`} />
+                <FoodImage dishName={m.name} photo={m.photoUrl} height={140} caption={`${m.type.toUpperCase()} · ${m.name.slice(0, 22)}`} />
                 <View style={styles.mealInfo}>
                   <View style={styles.mealTopRow}>
                     <Text style={styles.mealType}>{m.type}</Text>

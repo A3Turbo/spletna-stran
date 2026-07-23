@@ -10,7 +10,7 @@ import { Meal } from '../src/generatePlan';
 
 export default function RecipeScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ name?: string; time?: string; kcal?: string; price?: string; type?: string; tag?: string; mainIngredients?: string }>();
+  const params = useLocalSearchParams<{ name?: string; time?: string; kcal?: string; price?: string; type?: string; tag?: string; mainIngredients?: string; photoUrl?: string }>();
 
   const mealName = params.name ?? RECIPE_DETAIL.name;
   const mealTime = params.time ?? RECIPE_DETAIL.time;
@@ -33,6 +33,7 @@ export default function RecipeScreen() {
       price: mealPrice,
       tag: params.tag ?? '',
       mainIngredients: params.mainIngredients ? JSON.parse(params.mainIngredients) : [],
+      photoUrl: params.photoUrl || undefined,
     };
     toggleFavorite(meal);
   }
@@ -41,7 +42,7 @@ export default function RecipeScreen() {
     <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} showsVerticalScrollIndicator={false}>
       {/* Hero photo */}
       <View style={{ position: 'relative' }}>
-        <FoodImage dishName={mealName} height={280} caption={`${params.type?.toUpperCase() ?? 'RECIPE'} · ${mealName.slice(0, 28)}`} />
+        <FoodImage dishName={mealName} photo={params.photoUrl || undefined} height={280} caption={`${params.type?.toUpperCase() ?? 'RECIPE'} · ${mealName.slice(0, 28)}`} />
         <TouchableOpacity style={styles.backCircle} onPress={() => router.back()}>
           <Text style={styles.backCircleText}>←</Text>
         </TouchableOpacity>

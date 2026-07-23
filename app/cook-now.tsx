@@ -71,9 +71,12 @@ export default function CookNowScreen() {
                 return (
                   <TouchableOpacity key={i} style={styles.card} onPress={() => router.push({
                     pathname: '/recipe',
-                    params: { name: m.name, time: m.time, kcal: String(m.kcal), price: String(m.price), type: m.type },
+                    params: {
+                      name: m.name, time: m.time, kcal: String(m.kcal), price: String(m.price), type: m.type,
+                      tag: m.tag, mainIngredients: JSON.stringify(m.mainIngredients), photoUrl: m.photoUrl ?? '',
+                    },
                   })}>
-                    <FoodImage dishName={m.name} height={120} caption={`${m.type.toUpperCase()} · ${m.time}`} />
+                    <FoodImage dishName={m.name} photo={m.photoUrl} height={120} caption={`${m.type.toUpperCase()} · ${m.time}`} />
                     <View style={styles.cardBody}>
                       <Text style={styles.mealType}>{m.type}</Text>
                       <Text style={styles.mealName}>{m.name}</Text>

@@ -10,6 +10,7 @@ export type Meal = {
   price: number;
   tag: string;
   mainIngredients: string[];
+  photoUrl?: string;
 };
 
 export type PlanDay = {
