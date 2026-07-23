@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "jedilnik",
+    "name": "Jedilnik",
     "slug": "jedilnik",
     "scheme": "jedilnik",
     "version": "1.0.0",
@@ -12,7 +12,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F2EBDD"
     },
     "ios": {
       "supportsTablet": true
@@ -20,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#F2EBDD"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
