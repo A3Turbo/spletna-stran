@@ -163,7 +163,7 @@ export default function SettingsScreen() {
 
         <Rule />
 
-        <Text style={styles.versionNote}>Jedilnik · version 1.0.0 · prices updated May 5, 2026</Text>
+        <Text style={styles.versionNote}>Nana · version 1.0.0 · prices updated May 5, 2026</Text>
       </ScrollView>
     </SafeAreaView>
   );
