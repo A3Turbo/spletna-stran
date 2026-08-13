@@ -24,7 +24,8 @@ export default function HomeScreen() {
       >
         <View style={StyleSheet.absoluteFill} />
         <View style={[StyleSheet.absoluteFill, styles.heroGradient]} />
-        <SafeAreaView style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <SafeAreaView style={{ flex: 1, justifyContent: 'space-between' }}>
+          <Text style={styles.wordmark}>Nana</Text>
           <View style={styles.heroText}>
             <Text style={styles.heroIssue}>Week {week} · {season} meal plan</Text>
             <Text style={styles.heroTitle}>
@@ -72,6 +73,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   heroGradient: {
     backgroundColor: 'transparent',
+  },
+  wordmark: {
+    fontFamily: 'DM Serif Display Italic',
+    fontSize: 22,
+    color: '#FBF6EA',
+    paddingHorizontal: 20,
+    paddingTop: 14,
   },
   heroText: {
     paddingHorizontal: 20,

@@ -55,7 +55,7 @@ export default function WeekScreen() {
         <TouchableOpacity onPress={() => router.push('/')}>
           <Text style={styles.menuBtn}>≡  Menu</Text>
         </TouchableOpacity>
-        <Text style={styles.dateRange}>{weekRange}</Text>
+        <Text style={styles.dateRange}>Nana</Text>
         <TouchableOpacity onPress={() => router.push('/stats')}>
           <Text style={styles.statsBtn}>◔  STATS</Text>
         </TouchableOpacity>
@@ -63,7 +63,7 @@ export default function WeekScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.titleSection}>
-          <Eyebrow>Week {weekNum} · {season}</Eyebrow>
+          <Eyebrow>Week {weekNum} · {season} · {weekRange}</Eyebrow>
           <Text style={styles.title}>Weekly{'\n'}<Text style={{ fontStyle: 'italic' }}>meal plan.</Text></Text>
           <Text style={styles.meta}>
             {totalMeals} MEALS  ·  €{budget.spent.toFixed(2)} / €{budget.target}
