@@ -71,7 +71,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   heroScrim: {
-    backgroundColor: 'rgba(31,22,18,0.25)',
+    backgroundColor: 'rgba(31,22,18,0.12)',
   },
   wordmark: {
     fontFamily: 'DM Serif Display Italic',
@@ -79,6 +79,9 @@ const styles = StyleSheet.create({
     color: '#FBF6EA',
     paddingHorizontal: 20,
     paddingTop: 14,
+    textShadowColor: 'rgba(31,22,18,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
   },
   heroText: {
     paddingHorizontal: 20,
@@ -91,6 +94,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: 'rgba(251,246,234,0.85)',
     marginBottom: 8,
+    textShadowColor: 'rgba(31,22,18,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
   },
   heroTitle: {
     fontFamily: 'DM Serif Display',
@@ -98,6 +104,9 @@ const styles = StyleSheet.create({
     lineHeight: 44,
     letterSpacing: -0.5,
     color: '#FBF6EA',
+    textShadowColor: 'rgba(31,22,18,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 8,
   },
   content: {
     paddingHorizontal: 22,
