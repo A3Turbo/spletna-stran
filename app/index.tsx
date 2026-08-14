@@ -19,11 +19,10 @@ export default function HomeScreen() {
       {/* Hero */}
       <ImageBackground
         source={{ uri: PHOTO_BY_DISH['hero-table'] }}
-        style={{ height: height * 0.44 }}
+        style={{ height: height * 0.44, backgroundColor: colors.ink }}
         resizeMode="cover"
       >
-        <View style={StyleSheet.absoluteFill} />
-        <View style={[StyleSheet.absoluteFill, styles.heroGradient]} />
+        <View style={[StyleSheet.absoluteFill, styles.heroScrim]} />
         <SafeAreaView style={{ flex: 1, justifyContent: 'space-between' }}>
           <Text style={styles.wordmark}>Nana</Text>
           <View style={styles.heroText}>
@@ -71,8 +70,8 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  heroGradient: {
-    backgroundColor: 'transparent',
+  heroScrim: {
+    backgroundColor: 'rgba(31,22,18,0.25)',
   },
   wordmark: {
     fontFamily: 'DM Serif Display Italic',
