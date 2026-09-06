@@ -6,63 +6,80 @@ import { Eyebrow, Rule, FoodImage } from '../src/components';
 import { RECIPE_DETAIL } from '../src/data';
 import { useRatings } from '../src/useRatings';
 import { useFavorites } from '../src/useFavorites';
+import { useWeekPlan } from '../src/useWeekPlan';
 import { Meal } from '../src/generatePlan';
+
+function scaleAmount(amount: string, factor: number): string {
+  if (factor === 1) return amount;
+  const fracMatch = amount.match(/^(\d+)\/(\d+)\s*(.*)$/);
+  if (fracMatch) {
+    const value = (parseInt(fracMatch[1], 10) / parseInt(fracMatch[2], 10)) * factor;
+    const scaled = Math.round(value * 100) / 100;
+    return fracMatch[3] ? `${scaled} ${fracMatch[3]}` : `${scaled}`;
+  }
+  const match = amount.match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
+  if (!match) return amount;
+  const scaled = Math.round(parseFloat(match[1]) * factor * 10) / 10;
+  return match[2] ? `${scaled} ${match[2]}` : `${scaled}`;
+}
 
 export default function RecipeScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ name?: string; time?: string; kcal?: string; price?: string; type?: string; tag?: string; mainIngredients?: string; photoUrl?: string }>();
+  const { days } = useWeekPlan();
+  const { favorites, isFavorite, toggleFavorite } = useFavorites();
 
   const mealName = params.name ?? RECIPE_DETAIL.name;
-  const mealTime = params.time ?? RECIPE_DETAIL.time;
-  const mealKcal = params.kcal ? parseInt(params.kcal) : RECIPE_DETAIL.kcal;
-  const mealPrice = params.price ? parseFloat(params.price) : RECIPE_DETAIL.price;
+  const found = days.flatMap(d => d.meals).find(m => m.name === mealName)
+    ?? favorites.find(m => m.name === mealName);
 
-  const r = RECIPE_DETAIL;
-  const [portion, setPortion] = useState(r.servings);
+  const meal: Meal = found ?? {
+    type: (params.type as Meal['type']) ?? 'dinner',
+    name: mealName,
+    time: params.time ?? RECIPE_DETAIL.time,
+    kcal: params.kcal ? parseInt(params.kcal) : RECIPE_DETAIL.kcal,
+    price: params.price ? parseFloat(params.price) : RECIPE_DETAIL.price,
+    tag: params.tag ?? '',
+    mainIngredients: params.mainIngredients ? JSON.parse(params.mainIngredients) : [],
+    photoUrl: params.photoUrl || undefined,
+    intro: RECIPE_DETAIL.intro,
+    servings: RECIPE_DETAIL.servings,
+    protein: RECIPE_DETAIL.protein,
+    ingredients: RECIPE_DETAIL.ingredients.map(i => ({ name: i.name, amount: `${i.amount} ${i.unit}`.trim() })),
+    steps: RECIPE_DETAIL.steps,
+  };
+
+  const [portion, setPortion] = useState(meal.servings);
   const { ratings, rate } = useRatings();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const currentRating = ratings[mealName] ?? 0;
   const favorite = isFavorite(mealName);
-
-  function onToggleFavorite() {
-    const meal: Meal = {
-      type: (params.type as Meal['type']) ?? 'dinner',
-      name: mealName,
-      time: mealTime,
-      kcal: mealKcal,
-      price: mealPrice,
-      tag: params.tag ?? '',
-      mainIngredients: params.mainIngredients ? JSON.parse(params.mainIngredients) : [],
-      photoUrl: params.photoUrl || undefined,
-    };
-    toggleFavorite(meal);
-  }
+  const scaleFactor = portion / meal.servings;
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} showsVerticalScrollIndicator={false}>
       {/* Hero photo */}
       <View style={{ position: 'relative' }}>
-        <FoodImage dishName={mealName} photo={params.photoUrl || undefined} height={280} caption={`${params.type?.toUpperCase() ?? 'RECIPE'} · ${mealName.slice(0, 28)}`} />
+        <FoodImage dishName={mealName} photo={meal.photoUrl} height={280} caption={`${meal.type.toUpperCase()} · ${mealName.slice(0, 28)}`} />
         <TouchableOpacity style={styles.backCircle} onPress={() => router.back()}>
           <Text style={styles.backCircleText}>←</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.heartCircle} onPress={onToggleFavorite}>
+        <TouchableOpacity style={styles.heartCircle} onPress={() => toggleFavorite(meal)}>
           <Text style={styles.heartCircleText}>{favorite ? '♥' : '♡'}</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
-        <Eyebrow>Recipe · {params.type ?? 'Meal'}</Eyebrow>
+        <Eyebrow>Recipe · {meal.type}</Eyebrow>
         <Text style={styles.title}>{mealName}</Text>
-        <Text style={styles.intro}>{r.intro}</Text>
+        <Text style={styles.intro}>{meal.intro}</Text>
 
         {/* Stats grid */}
         <View style={styles.statsGrid}>
           {[
-            { v: mealTime,               l: 'Time' },
-            { v: `${mealKcal}`,          l: 'kcal' },
-            { v: `${r.protein}g`,        l: 'Protein' },
-            { v: `€${mealPrice.toFixed(2)}`, l: '/person' },
+            { v: meal.time,               l: 'Time' },
+            { v: `${meal.kcal}`,          l: 'kcal' },
+            { v: `${meal.protein}g`,      l: 'Protein' },
+            { v: `€${meal.price.toFixed(2)}`, l: '/person' },
           ].map((s, i) => (
             <View key={i} style={[styles.statCell, i < 3 && styles.statBorder]}>
               <Text style={styles.statVal}>{s.v}</Text>
@@ -93,23 +110,18 @@ export default function RecipeScreen() {
         <Rule />
         <Eyebrow>Ingredients</Eyebrow>
         <View style={{ marginBottom: 16 }}>
-          {r.ingredients.map((ing, i) => {
-            const scaled = !isNaN(parseFloat(ing.amount))
-              ? Math.round(parseFloat(ing.amount) * portion / r.servings)
-              : ing.amount;
-            return (
-              <View key={i} style={[styles.ingRow, i < r.ingredients.length - 1 && styles.ingBorder]}>
-                <Text style={styles.ingName}>{ing.name}</Text>
-                <Text style={styles.ingAmt}>{scaled} {ing.unit}</Text>
-              </View>
-            );
-          })}
+          {meal.ingredients.map((ing, i) => (
+            <View key={i} style={[styles.ingRow, i < meal.ingredients.length - 1 && styles.ingBorder]}>
+              <Text style={styles.ingName}>{ing.name}</Text>
+              <Text style={styles.ingAmt}>{scaleAmount(ing.amount, scaleFactor)}</Text>
+            </View>
+          ))}
         </View>
 
         <Rule />
         <Eyebrow>Preparation</Eyebrow>
         <View style={{ marginBottom: 20 }}>
-          {r.steps.map((s, i) => (
+          {meal.steps.map((s, i) => (
             <View key={i} style={styles.stepRow}>
               <Text style={styles.stepNum}>{i + 1}.</Text>
               <Text style={styles.stepText}>{s}</Text>

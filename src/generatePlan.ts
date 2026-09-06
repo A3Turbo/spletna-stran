@@ -2,6 +2,11 @@ const API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
 const MODEL = 'claude-sonnet-5';
 const API_URL = 'https://api.anthropic.com/v1/messages';
 
+export type RecipeIngredient = {
+  name: string;
+  amount: string;
+};
+
 export type Meal = {
   type: 'breakfast' | 'lunch' | 'dinner';
   name: string;
@@ -11,6 +16,11 @@ export type Meal = {
   tag: string;
   mainIngredients: string[];
   photoUrl?: string;
+  intro: string;
+  servings: number;
+  protein: number;
+  ingredients: RecipeIngredient[];
+  steps: string[];
 };
 
 export type PlanDay = {
@@ -71,8 +81,28 @@ const PLAN_SCHEMA = {
                 price: { type: 'number', description: 'estimated price per portion in the local currency' },
                 tag: { type: 'string', description: 'one short tag, e.g. quick, vegan, warm dish' },
                 mainIngredients: { type: 'array', items: { type: 'string' } },
+                intro: { type: 'string', description: 'one warm, editorial sentence about the dish' },
+                servings: { type: 'number', description: 'default number of people this recipe serves, e.g. 4' },
+                protein: { type: 'number', description: 'grams of protein per serving' },
+                ingredients: {
+                  type: 'array',
+                  description: 'full ingredient list with amounts scaled for `servings` people',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      name: { type: 'string' },
+                      amount: { type: 'string', description: 'e.g. "600 g", "2 pcs", "to taste"' },
+                    },
+                    required: ['name', 'amount'],
+                  },
+                },
+                steps: {
+                  type: 'array',
+                  description: 'numbered preparation steps, plain sentences',
+                  items: { type: 'string' },
+                },
               },
-              required: ['type', 'name', 'time', 'kcal', 'price', 'tag', 'mainIngredients'],
+              required: ['type', 'name', 'time', 'kcal', 'price', 'tag', 'mainIngredients', 'intro', 'servings', 'protein', 'ingredients', 'steps'],
             },
           },
         },
@@ -152,6 +182,7 @@ Rules:
 - Avoid ingredients any family member dislikes.
 - Vary meals across the week — do not repeat the same dish.
 - Keep breakfasts quick (under 20 min) unless it's a weekend.
+- For every meal, write a full, real recipe: a one-sentence intro, the ingredient list with amounts scaled to \`servings\` people, and clear numbered preparation steps — a family should be able to cook the dish from this alone.
 - After planning all meals, build a consolidated shoppingList: merge the same ingredient used in multiple meals into a single line with the total amount and total estimated price, grouped into sensible categories.
 - Call the submit_week_plan tool with the full 7-day plan and the shoppingList.`;
 
@@ -169,7 +200,7 @@ Rules:
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 4096,
+        max_tokens: 8192,
         messages: [{ role: 'user', content: prompt }],
         tools: [{
           name: 'submit_week_plan',
