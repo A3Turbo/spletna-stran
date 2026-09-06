@@ -5,7 +5,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../src/theme';
+import { Colors } from '../src/theme';
+import { useTheme } from '../src/ThemeContext';
 import { Eyebrow, Rule, Toggle } from '../src/components';
 import { usePantry, PantryItem } from '../src/usePantry';
 
@@ -14,6 +15,8 @@ function newItem(): PantryItem {
 }
 
 export default function PantryScreen() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const { items, addItem, updateItem, removeItem, toggleHave } = usePantry();
   const [modalVisible, setModalVisible] = useState(false);
@@ -197,7 +200,8 @@ export default function PantryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
   header:      { paddingHorizontal: 22, paddingVertical: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   backBtn:     { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 1.5, color: colors.inkSoft },
   chapter:     { fontFamily: 'JetBrains Mono', fontSize: 10, letterSpacing: 2, color: colors.inkSoft },
@@ -237,4 +241,5 @@ const styles = StyleSheet.create({
   haveRow:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   deleteBtn:    { borderWidth: 1, borderColor: colors.tomato, paddingVertical: 14, alignItems: 'center' },
   deleteBtnText:{ fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: colors.tomato },
-});
+  });
+}

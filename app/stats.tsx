@@ -1,7 +1,8 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../src/theme';
+import { Colors } from '../src/theme';
+import { useTheme } from '../src/ThemeContext';
 import { Eyebrow, Rule } from '../src/components';
 import { STATS, SAMPLE_WEEK, PANTRY } from '../src/data';
 import { useFamilyCount } from '../src/useFamily';
@@ -10,6 +11,8 @@ const pantryHave = PANTRY.filter(p => p.have);
 const pantrySavings = pantryHave.reduce((s, p) => s + p.savedPrice, 0);
 
 export default function StatsScreen() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const { budget, nutrition, topRated } = STATS;
   const memberCount = useFamilyCount();
@@ -107,7 +110,8 @@ export default function StatsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
   header:        { paddingHorizontal: 22, paddingVertical: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   backBtn:       { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 1.5, color: colors.inkSoft },
   chapter:       { fontFamily: 'JetBrains Mono', fontSize: 10, letterSpacing: 2, color: colors.inkSoft },
@@ -140,4 +144,5 @@ const styles = StyleSheet.create({
   summaryCellBorder: { borderRightWidth: 1, borderRightColor: colors.rule },
   summaryVal:    { fontFamily: 'DM Serif Display', fontSize: 20, color: colors.ink },
   summaryLabel:  { fontFamily: 'JetBrains Mono', fontSize: 9, letterSpacing: 1, color: colors.inkSoft, marginTop: 4, textTransform: 'uppercase' },
-});
+  });
+}

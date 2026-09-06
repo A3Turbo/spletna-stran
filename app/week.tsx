@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../src/theme';
+import { Colors } from '../src/theme';
+import { useTheme } from '../src/ThemeContext';
 import { Eyebrow, Rule, FoodImage } from '../src/components';
 import { STATS } from '../src/data';
 import { getWeekStart, formatWeekRange, getISOWeek, getSeason, getWeekDays } from '../src/utils';
@@ -17,6 +18,8 @@ const weekNum = getISOWeek();
 const season = getSeason();
 
 export default function WeekScreen() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const [day, setDay] = useState(0);
   const [guestDay, setGuestDay] = useState<number | null>(null);
@@ -187,7 +190,8 @@ export default function WeekScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
   masthead:         { paddingHorizontal: 22, paddingVertical: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   menuBtn:          { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 1.5, color: colors.inkSoft },
   dateRange:        { fontFamily: 'DM Serif Display', fontStyle: 'italic', fontSize: 13, color: colors.inkSoft },
@@ -236,4 +240,5 @@ const styles = StyleSheet.create({
   modalBtnOutlineText: { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 1.5, color: colors.inkSoft },
   modalBtnPrimary:  { flex: 1, backgroundColor: colors.ink, paddingVertical: 14, alignItems: 'center' },
   modalBtnPrimaryText: { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 1.5, color: colors.paper },
-});
+  });
+}

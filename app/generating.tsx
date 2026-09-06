@@ -3,10 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors } from '../src/theme';
+import { Colors } from '../src/theme';
+import { useTheme } from '../src/ThemeContext';
 import { Eyebrow } from '../src/components';
 import { useRatings } from '../src/useRatings';
 import { useRegion } from '../src/useRegion';
+import { useUnits } from '../src/useUnits';
 import { useWeekPlan } from '../src/useWeekPlan';
 import { useFavorites } from '../src/useFavorites';
 import { generateWeekPlan, FamilyMember } from '../src/generatePlan';
@@ -24,17 +26,20 @@ const STEPS = [
 ];
 
 export default function GeneratingScreen() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const { ratings, loaded: ratingsLoaded } = useRatings();
   const { region, loaded: regionLoaded } = useRegion();
+  const { units, loaded: unitsLoaded } = useUnits();
   const { savePlan } = useWeekPlan();
   const { favorites, loaded: favoritesLoaded } = useFavorites();
   const started = useRef(false);
 
   useEffect(() => {
-    if (!ratingsLoaded || !regionLoaded || !favoritesLoaded || started.current) return;
+    if (!ratingsLoaded || !regionLoaded || !unitsLoaded || !favoritesLoaded || started.current) return;
     started.current = true;
 
     let cancelled = false;
@@ -48,7 +53,7 @@ export default function GeneratingScreen() {
         const family: FamilyMember[] = raw ? JSON.parse(raw) : [];
         const weekDays = getWeekDays(getWeekStart());
 
-        const generated = await generateWeekPlan({ family, ratings, region, weekDays, favorites });
+        const generated = await generateWeekPlan({ family, ratings, region, weekDays, favorites, units });
         if (cancelled) return;
 
         const allNames = generated.days.flatMap(d => d.meals.map(m => m.name));
@@ -73,7 +78,7 @@ export default function GeneratingScreen() {
     run();
 
     return () => { cancelled = true; clearInterval(stepTimer); };
-  }, [ratingsLoaded, regionLoaded, favoritesLoaded]);
+  }, [ratingsLoaded, regionLoaded, unitsLoaded, favoritesLoaded]);
 
   const progress = ((step + 1) / STEPS.length) * 100;
 
@@ -126,7 +131,8 @@ export default function GeneratingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', paddingHorizontal: 22 },
   title: { fontFamily: 'DM Serif Display', fontSize: 38, lineHeight: 38, letterSpacing: -0.5, color: colors.ink, marginBottom: 28 },
   steps: { marginBottom: 28 },
@@ -144,4 +150,5 @@ const styles = StyleSheet.create({
   btnPrimaryText: { fontFamily: 'Inter Medium', fontSize: 15, color: colors.paper },
   btnGhost: { paddingVertical: 8, alignItems: 'center' },
   btnGhostText: { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: colors.inkSoft },
-});
+  });
+}

@@ -2,10 +2,20 @@ import { Stack, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { useFonts } from 'expo-font';
+import { ThemeProvider, useTheme } from '../src/ThemeContext';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutNav />
+    </ThemeProvider>
+  );
+}
+
+function RootLayoutNav() {
+  const { colors, mode } = useTheme();
   const [loaded] = useFonts({
     'DM Serif Display':      require('../assets/fonts/DMSerifDisplay-Regular.ttf'),
     'DM Serif Display Italic': require('../assets/fonts/DMSerifDisplay-Italic.ttf'),
@@ -25,8 +35,8 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: '#F2EBDD' } }}>
+      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
+      <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: colors.paper } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="family" />
         <Stack.Screen name="generating" />

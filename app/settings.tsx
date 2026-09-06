@@ -2,9 +2,22 @@ import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SectionList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../src/theme';
+import { Colors, ThemeMode } from '../src/theme';
+import { useTheme } from '../src/ThemeContext';
 import { Eyebrow, Rule, Toggle } from '../src/components';
 import { useRegion, REGIONS, STORES } from '../src/useRegion';
+import { useUnits, UnitSystem } from '../src/useUnits';
+
+const THEME_OPTIONS: { id: ThemeMode; label: string }[] = [
+  { id: 'original', label: 'Original' },
+  { id: 'light',    label: 'Light' },
+  { id: 'dark',     label: 'Dark' },
+];
+
+const UNIT_OPTIONS: { id: UnitSystem; label: string; sub: string }[] = [
+  { id: 'metric',   label: 'Metric',   sub: 'grams, ml, pieces' },
+  { id: 'imperial', label: 'Imperial', sub: 'cups, oz, lb, pieces' },
+];
 
 const PRICE_SOURCES = [
   { label: 'Store catalogues', pct: 68 },
@@ -13,8 +26,11 @@ const PRICE_SOURCES = [
 ];
 
 export default function SettingsScreen() {
+  const { colors, mode, setMode } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const { region, setRegion } = useRegion();
+  const { units, setUnits } = useUnits();
 
   const [selectedStores, setSelectedStores] = useState<Record<string, boolean>>({
     Mercator: true, Spar: true, Lidl: true, Hofer: true,
@@ -25,7 +41,6 @@ export default function SettingsScreen() {
     Tesco: true, "Sainsbury's": true, ASDA: true,
     'Whole Foods': true, "Trader Joe's": true, Walmart: true, Kroger: true,
   });
-  const [localRecipes, setLocalRecipes] = useState(true);
   const [scanReceipts, setScanReceipts] = useState(false);
   const [autoUpdate, setAutoUpdate] = useState(true);
 
@@ -43,10 +58,46 @@ export default function SettingsScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backBtn}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.chapter}>SETTINGS</Text>
+        <Text style={styles.chapter}>PROFILE & SETTINGS</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        <Eyebrow>Your profile</Eyebrow>
+        <Text style={styles.title}>Made{'\n'}<Text style={{ fontStyle: 'italic' }}>your way.</Text></Text>
+        <Text style={styles.subtitle}>Choose how Nana looks and how recipes measure ingredients.</Text>
+
+        <Eyebrow color={colors.inkSoft}>Appearance</Eyebrow>
+        <View style={styles.optionRow}>
+          {THEME_OPTIONS.map(t => (
+            <TouchableOpacity
+              key={t.id}
+              style={[styles.optionBtn, mode === t.id && styles.optionBtnActive]}
+              onPress={() => setMode(t.id)}
+            >
+              <Text style={[styles.optionLabel, mode === t.id && styles.optionLabelActive]}>{t.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={{ height: 16 }} />
+
+        <Eyebrow color={colors.inkSoft}>Measurement units</Eyebrow>
+        <View style={styles.optionRow}>
+          {UNIT_OPTIONS.map(u => (
+            <TouchableOpacity
+              key={u.id}
+              style={[styles.optionBtn, units === u.id && styles.optionBtnActive]}
+              onPress={() => setUnits(u.id)}
+            >
+              <Text style={[styles.optionLabel, units === u.id && styles.optionLabelActive]}>{u.label}</Text>
+              <Text style={[styles.optionSub, units === u.id && styles.optionLabelActive]}>{u.sub}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <Text style={styles.unitsNote}>Applies to the next meal plan you generate.</Text>
+
+        <Rule />
+
         <Eyebrow>Price sources & localization</Eyebrow>
         <Text style={styles.title}>Prices from{'\n'}<Text style={{ fontStyle: 'italic' }}>your region.</Text></Text>
         <Text style={styles.subtitle}>
@@ -128,12 +179,6 @@ export default function SettingsScreen() {
         <View style={styles.toggleList}>
           {[
             {
-              label: 'Localized recipes',
-              sub: 'Ingredients and measures in local units',
-              val: localRecipes,
-              set: () => setLocalRecipes(v => !v),
-            },
-            {
               label: 'Scan receipts',
               sub: 'Automatically read prices from shopping receipts',
               val: scanReceipts,
@@ -169,13 +214,21 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
   header:            { paddingHorizontal: 22, paddingVertical: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   backBtn:           { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 1.5, color: colors.inkSoft },
   chapter:           { fontFamily: 'JetBrains Mono', fontSize: 10, letterSpacing: 2, color: colors.inkSoft },
   content:           { paddingHorizontal: 22, paddingBottom: 40 },
   title:             { fontFamily: 'DM Serif Display', fontSize: 32, lineHeight: 34, letterSpacing: -0.5, color: colors.ink, marginBottom: 8, marginTop: 4 },
   subtitle:          { fontFamily: 'Inter', fontSize: 14, lineHeight: 21, color: colors.inkSoft, marginBottom: 20 },
+  optionRow:         { flexDirection: 'row', gap: 8, marginBottom: 4 },
+  optionBtn:         { flex: 1, borderWidth: 1, borderColor: colors.rule, paddingVertical: 12, alignItems: 'center', backgroundColor: colors.card },
+  optionBtnActive:   { backgroundColor: colors.ink, borderColor: colors.ink },
+  optionLabel:       { fontFamily: 'DM Serif Display', fontSize: 16, color: colors.ink },
+  optionLabelActive: { color: colors.paper },
+  optionSub:         { fontFamily: 'JetBrains Mono', fontSize: 8, letterSpacing: 0.5, color: colors.inkSoft, marginTop: 3, textTransform: 'uppercase' },
+  unitsNote:         { fontFamily: 'JetBrains Mono', fontSize: 9, letterSpacing: 0.5, color: colors.inkSoft, marginTop: 8, marginBottom: 4 },
   selectedRegion:    { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.rule, padding: 14, marginBottom: 10 },
   selectedFlag:      { fontSize: 32 },
   selectedLabel:     { fontFamily: 'DM Serif Display', fontSize: 20, color: colors.ink },
@@ -209,4 +262,5 @@ const styles = StyleSheet.create({
   toggleLabel:       { fontFamily: 'DM Serif Display', fontSize: 17, color: colors.ink, marginBottom: 2 },
   toggleSub:         { fontFamily: 'Inter', fontSize: 12, lineHeight: 17, color: colors.inkSoft },
   versionNote:       { fontFamily: 'JetBrains Mono', fontSize: 9, letterSpacing: 1, color: colors.inkSoft, textAlign: 'center', opacity: 0.6, marginTop: 4 },
-});
+  });
+}

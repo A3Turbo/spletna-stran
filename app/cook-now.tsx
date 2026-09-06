@@ -1,7 +1,8 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../src/theme';
+import { Colors } from '../src/theme';
+import { useTheme } from '../src/ThemeContext';
 import { Eyebrow, Rule, FoodImage } from '../src/components';
 import { usePantry } from '../src/usePantry';
 import { useWeekPlan } from '../src/useWeekPlan';
@@ -11,6 +12,8 @@ function matchScore(ingredients: string[], pantryNames: string[]): number {
 }
 
 export default function CookNowScreen() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const { items } = usePantry();
   const { days } = useWeekPlan();
@@ -102,7 +105,8 @@ export default function CookNowScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
   header:       { paddingHorizontal: 22, paddingVertical: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   backBtn:      { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 1.5, color: colors.inkSoft },
   chapter:      { fontFamily: 'JetBrains Mono', fontSize: 10, letterSpacing: 2, color: colors.inkSoft },
@@ -125,4 +129,5 @@ const styles = StyleSheet.create({
   matchBar:     { height: 2, backgroundColor: colors.rule, overflow: 'hidden', marginBottom: 4 },
   matchFill:    { height: '100%', backgroundColor: colors.basil },
   matchLabel:   { fontFamily: 'JetBrains Mono', fontSize: 9, letterSpacing: 0.8, color: colors.inkSoft },
-});
+  });
+}

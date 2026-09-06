@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { colors } from '../src/theme';
+import { Colors } from '../src/theme';
+import { useTheme } from '../src/ThemeContext';
 import { Eyebrow, Rule, FoodImage } from '../src/components';
 import { RECIPE_DETAIL } from '../src/data';
 import { useRatings } from '../src/useRatings';
@@ -24,6 +25,8 @@ function scaleAmount(amount: string, factor: number): string {
 }
 
 export default function RecipeScreen() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const params = useLocalSearchParams<{ name?: string; time?: string; kcal?: string; price?: string; type?: string; tag?: string; mainIngredients?: string; photoUrl?: string }>();
   const { days } = useWeekPlan();
@@ -33,20 +36,22 @@ export default function RecipeScreen() {
   const found = days.flatMap(d => d.meals).find(m => m.name === mealName)
     ?? favorites.find(m => m.name === mealName);
 
-  const meal: Meal = found ?? {
-    type: (params.type as Meal['type']) ?? 'dinner',
+  // Fall back per-field: sample/legacy plans may not carry the newer recipe fields
+  // (intro/servings/protein/ingredients/steps), so don't assume `found` is complete.
+  const meal: Meal = {
+    type: found?.type ?? (params.type as Meal['type']) ?? 'dinner',
     name: mealName,
-    time: params.time ?? RECIPE_DETAIL.time,
-    kcal: params.kcal ? parseInt(params.kcal) : RECIPE_DETAIL.kcal,
-    price: params.price ? parseFloat(params.price) : RECIPE_DETAIL.price,
-    tag: params.tag ?? '',
-    mainIngredients: params.mainIngredients ? JSON.parse(params.mainIngredients) : [],
-    photoUrl: params.photoUrl || undefined,
-    intro: RECIPE_DETAIL.intro,
-    servings: RECIPE_DETAIL.servings,
-    protein: RECIPE_DETAIL.protein,
-    ingredients: RECIPE_DETAIL.ingredients.map(i => ({ name: i.name, amount: `${i.amount} ${i.unit}`.trim() })),
-    steps: RECIPE_DETAIL.steps,
+    time: found?.time ?? params.time ?? RECIPE_DETAIL.time,
+    kcal: found?.kcal ?? (params.kcal ? parseInt(params.kcal) : RECIPE_DETAIL.kcal),
+    price: found?.price ?? (params.price ? parseFloat(params.price) : RECIPE_DETAIL.price),
+    tag: found?.tag ?? params.tag ?? '',
+    mainIngredients: found?.mainIngredients ?? (params.mainIngredients ? JSON.parse(params.mainIngredients) : []),
+    photoUrl: found?.photoUrl ?? (params.photoUrl || undefined),
+    intro: found?.intro ?? RECIPE_DETAIL.intro,
+    servings: found?.servings ?? RECIPE_DETAIL.servings,
+    protein: found?.protein ?? RECIPE_DETAIL.protein,
+    ingredients: found?.ingredients ?? RECIPE_DETAIL.ingredients.map(i => ({ name: i.name, amount: `${i.amount} ${i.unit}`.trim() })),
+    steps: found?.steps ?? RECIPE_DETAIL.steps,
   };
 
   const [portion, setPortion] = useState(meal.servings);
@@ -155,7 +160,8 @@ export default function RecipeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
   backCircle:     { position: 'absolute', top: 52, left: 16, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(31,22,18,.7)', alignItems: 'center', justifyContent: 'center' },
   backCircleText: { color: '#fff', fontFamily: 'JetBrains Mono', fontSize: 14 },
   heartCircle:    { position: 'absolute', top: 52, right: 16, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(31,22,18,.7)', alignItems: 'center', justifyContent: 'center' },
@@ -190,4 +196,5 @@ const styles = StyleSheet.create({
   starIcon:         { fontSize: 32, color: colors.rule },
   starActive:       { color: colors.tomato },
   ratingConfirm:    { fontFamily: 'JetBrains Mono', fontSize: 10, letterSpacing: 1.2, color: colors.basil, marginBottom: 24 },
-});
+  });
+}

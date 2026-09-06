@@ -1,7 +1,8 @@
 import { View, Text, ScrollView, TouchableOpacity, ImageBackground, StyleSheet, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../src/theme';
+import { Colors } from '../src/theme';
+import { useTheme } from '../src/ThemeContext';
 import { Eyebrow, Rule } from '../src/components';
 import { PHOTO_BY_DISH, SAMPLE_WEEK } from '../src/data';
 import { getISOWeek, getSeason } from '../src/utils';
@@ -10,16 +11,23 @@ const mealsPerWeek = SAMPLE_WEEK.length * 3;
 
 const { height } = Dimensions.get('window');
 
+// The hero always shows a moody dark photo backdrop with light overlaid text,
+// regardless of the chosen app theme — so these stay fixed, not theme-driven.
+const HERO_INK = '#1F1612';
+const HERO_ACCENT = '#E8C9BD';
+
 export default function HomeScreen() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const week = getISOWeek();
   const season = getSeason();
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper }}>
-      {/* Hero */}
+      {/* Hero — always a dark photo backdrop with light text, independent of app theme */}
       <ImageBackground
         source={{ uri: PHOTO_BY_DISH['hero-table'] }}
-        style={{ height: height * 0.44, backgroundColor: colors.ink }}
+        style={{ height: height * 0.44, backgroundColor: HERO_INK }}
         resizeMode="cover"
       >
         <View style={[StyleSheet.absoluteFill, styles.heroScrim]} />
@@ -28,7 +36,7 @@ export default function HomeScreen() {
           <View style={styles.heroText}>
             <Text style={styles.heroIssue}>Week {week} · {season} meal plan</Text>
             <Text style={styles.heroTitle}>
-              Your{'\n'}<Text style={{ fontStyle: 'italic', color: colors.tomatoSoft }}>cookbook.</Text>
+              Your{'\n'}<Text style={{ fontStyle: 'italic', color: HERO_ACCENT }}>cookbook.</Text>
             </Text>
           </View>
         </SafeAreaView>
@@ -69,7 +77,8 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
   heroScrim: {
     backgroundColor: 'rgba(31,22,18,0.12)',
   },
@@ -175,4 +184,5 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     opacity: 0.75,
   },
-});
+  });
+}

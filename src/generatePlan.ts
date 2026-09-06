@@ -142,12 +142,16 @@ export async function generateWeekPlan(params: {
   region: string;
   weekDays: { day: string; date: string }[];
   favorites?: Meal[];
+  units?: 'metric' | 'imperial';
 }): Promise<GeneratedPlan> {
   if (!API_KEY) {
     throw new GenerationError('Missing Anthropic API key. Add EXPO_PUBLIC_ANTHROPIC_API_KEY to .env');
   }
 
-  const { family, ratings, region, weekDays, favorites = [] } = params;
+  const { family, ratings, region, weekDays, favorites = [], units = 'metric' } = params;
+  const unitsInstruction = units === 'imperial'
+    ? 'Write all ingredient amounts and the shopping list in US imperial units (cups, tbsp, tsp, oz, lb, or pieces) — never grams, ml, or kg.'
+    : 'Write all ingredient amounts and the shopping list in metric units (g, kg, ml, l, or pieces) — never cups, oz, or lb.';
 
   const liked = Object.entries(ratings).filter(([, s]) => s >= 4).map(([n]) => n);
   const disliked = Object.entries(ratings).filter(([, s]) => s <= 2).map(([n]) => n);
@@ -183,6 +187,7 @@ Rules:
 - Vary meals across the week — do not repeat the same dish.
 - Keep breakfasts quick (under 20 min) unless it's a weekend.
 - For every meal, write a full, real recipe: a one-sentence intro, the ingredient list with amounts scaled to \`servings\` people, and clear numbered preparation steps — a family should be able to cook the dish from this alone.
+- ${unitsInstruction}
 - After planning all meals, build a consolidated shoppingList: merge the same ingredient used in multiple meals into a single line with the total amount and total estimated price, grouped into sensible categories.
 - Call the submit_week_plan tool with the full 7-day plan and the shoppingList.`;
 

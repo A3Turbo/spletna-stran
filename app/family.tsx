@@ -6,7 +6,8 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors } from '../src/theme';
+import { Colors } from '../src/theme';
+import { useTheme } from '../src/ThemeContext';
 import { Eyebrow, Rule, Tag } from '../src/components';
 
 const STORAGE_KEY = '@jedilnik_family';
@@ -51,6 +52,8 @@ function newMember(index: number): Member {
 }
 
 export default function FamilyScreen() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const [members, setMembers] = useState<Member[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -321,7 +324,8 @@ export default function FamilyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
   header:            { paddingHorizontal: 22, paddingVertical: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   backBtn:           { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 1.5, color: colors.inkSoft },
   chapter:           { fontFamily: 'JetBrains Mono', fontSize: 10, letterSpacing: 2, color: colors.inkSoft },
@@ -364,4 +368,5 @@ const styles = StyleSheet.create({
   addTagBtnText:     { fontFamily: 'DM Serif Display', fontSize: 22, color: colors.paper },
   deleteBtn:         { borderWidth: 1, borderColor: colors.tomato, paddingVertical: 14, alignItems: 'center' },
   deleteBtnText:     { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: colors.tomato },
-});
+  });
+}

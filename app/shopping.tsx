@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../src/theme';
+import { Colors } from '../src/theme';
+import { useTheme } from '../src/ThemeContext';
 import { Eyebrow, Rule } from '../src/components';
 import { useWeekPlan } from '../src/useWeekPlan';
 
 type CheckedMap = Record<string, boolean>;
 
 export default function ShoppingScreen() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const { shoppingList } = useWeekPlan();
   const [checked, setChecked] = useState<CheckedMap>({});
@@ -92,7 +95,8 @@ export default function ShoppingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
   header:       { paddingHorizontal: 22, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   backBtn:      { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 1.5, color: colors.inkSoft },
   title:        { fontFamily: 'DM Serif Display', fontSize: 26, color: colors.ink },
@@ -120,4 +124,5 @@ const styles = StyleSheet.create({
   footerTotal:  { fontFamily: 'DM Serif Display', fontSize: 24, color: colors.ink },
   orderBtn:     { backgroundColor: colors.ink, paddingHorizontal: 20, paddingVertical: 14 },
   orderBtnText: { fontFamily: 'JetBrains Mono', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: colors.paper },
-});
+  });
+}
