@@ -114,19 +114,25 @@ export default function FamilyScreen() {
     return list.includes(val) ? list.filter(x => x !== val) : [...list, val];
   }
 
+  function toggleAllergy(val: string) {
+    setEditing(prev => prev ? { ...prev, allergies: toggleTag(prev.allergies, val) } : prev);
+  }
+
+  function toggleDislike(val: string) {
+    setEditing(prev => prev ? { ...prev, dislikes: toggleTag(prev.dislikes, val) } : prev);
+  }
+
   function addCustomAllergy() {
     const val = customAllergy.trim();
-    if (!val || !editing) return;
-    if (!editing.allergies.includes(val))
-      setEditing({ ...editing, allergies: [...editing.allergies, val] });
+    if (!val) return;
+    setEditing(prev => prev && !prev.allergies.includes(val) ? { ...prev, allergies: [...prev.allergies, val] } : prev);
     setCustomAllergy('');
   }
 
   function addCustomDislike() {
     const val = customDislike.trim();
-    if (!val || !editing) return;
-    if (!editing.dislikes.includes(val))
-      setEditing({ ...editing, dislikes: [...editing.dislikes, val] });
+    if (!val) return;
+    setEditing(prev => prev && !prev.dislikes.includes(val) ? { ...prev, dislikes: [...prev.dislikes, val] } : prev);
     setCustomDislike('');
   }
 
@@ -202,7 +208,7 @@ export default function FamilyScreen() {
                   <TouchableOpacity
                     key={c}
                     style={[styles.colorDot, { backgroundColor: c }, editing?.color === c && styles.colorDotActive]}
-                    onPress={() => editing && setEditing({ ...editing, color: c })}
+                    onPress={() => setEditing(prev => prev ? { ...prev, color: c } : prev)}
                   />
                 ))}
               </View>
@@ -213,7 +219,7 @@ export default function FamilyScreen() {
               <TextInput
                 style={styles.input}
                 value={editing?.name ?? ''}
-                onChangeText={t => editing && setEditing({ ...editing, name: t })}
+                onChangeText={t => setEditing(prev => prev ? { ...prev, name: t } : prev)}
                 placeholder="e.g. Ana"
                 placeholderTextColor={colors.rule}
               />
@@ -222,7 +228,7 @@ export default function FamilyScreen() {
               <TextInput
                 style={styles.input}
                 value={editing?.role ?? ''}
-                onChangeText={t => editing && setEditing({ ...editing, role: t })}
+                onChangeText={t => setEditing(prev => prev ? { ...prev, role: t } : prev)}
                 placeholder="e.g. mom, dad, daughter 8, son 5"
                 placeholderTextColor={colors.rule}
               />
@@ -235,7 +241,7 @@ export default function FamilyScreen() {
                   <TouchableOpacity
                     key={d}
                     style={[styles.pill, editing?.diet === d && styles.pillActive]}
-                    onPress={() => editing && setEditing({ ...editing, diet: d })}
+                    onPress={() => setEditing(prev => prev ? { ...prev, diet: d } : prev)}
                   >
                     <Text style={[styles.pillText, editing?.diet === d && styles.pillTextActive]}>{d}</Text>
                   </TouchableOpacity>
@@ -252,12 +258,21 @@ export default function FamilyScreen() {
                     <TouchableOpacity
                       key={a}
                       style={[styles.pill, on && styles.pillAllergyActive]}
-                      onPress={() => editing && setEditing({ ...editing, allergies: toggleTag(editing.allergies, a) })}
+                      onPress={() => toggleAllergy(a)}
                     >
                       <Text style={[styles.pillText, on && styles.pillAllergyText]}>{on ? '⊘ ' : ''}{a}</Text>
                     </TouchableOpacity>
                   );
                 })}
+                {editing?.allergies.filter(a => !COMMON_ALLERGIES.includes(a)).map(a => (
+                  <TouchableOpacity
+                    key={a}
+                    style={[styles.pill, styles.pillAllergyActive]}
+                    onPress={() => toggleAllergy(a)}
+                  >
+                    <Text style={[styles.pillText, styles.pillAllergyText]}>⊘ {a}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
               <View style={styles.customRow}>
                 <TextInput
@@ -284,12 +299,21 @@ export default function FamilyScreen() {
                     <TouchableOpacity
                       key={d}
                       style={[styles.pill, on && styles.pillActive]}
-                      onPress={() => editing && setEditing({ ...editing, dislikes: toggleTag(editing.dislikes, d) })}
+                      onPress={() => toggleDislike(d)}
                     >
                       <Text style={[styles.pillText, on && styles.pillTextActive]}>{d}</Text>
                     </TouchableOpacity>
                   );
                 })}
+                {editing?.dislikes.filter(d => !COMMON_DISLIKES.includes(d)).map(d => (
+                  <TouchableOpacity
+                    key={d}
+                    style={[styles.pill, styles.pillActive]}
+                    onPress={() => toggleDislike(d)}
+                  >
+                    <Text style={[styles.pillText, styles.pillTextActive]}>{d}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
               <View style={styles.customRow}>
                 <TextInput
